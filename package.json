@@ -1,6 +1,6 @@
 {
 	"name": "@cldmv/lib-process",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Process safety for Node: liveness checks a crash can't leave stale, locks that release when their holder dies, and kills that only ever reach your own processes.",
 	"type": "module",
 	"license": "Apache-2.0",
