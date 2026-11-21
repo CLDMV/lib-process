@@ -6,6 +6,15 @@ Process safety for Node: liveness checks a crash can't leave stale, locks that r
 
 ---
 
+## ✨ What's New
+
+### Latest: v0.1.0 (November 2026)
+
+- **First release** — `alive.hold()` / `alive.check()` give a liveness check through a Unix socket that a crash can't leave stale, `lock()` is an exclusive lock that a dead holder's successor takes over at once, and `safeKill()` only signals the caller's own descendants (or reported processes that started after a given time) ([#2](https://github.com/CLDMV/lib-process/pull/2)). `lock()` and `safeKill()` are Linux only for now.
+- [View full v0.1.0 Changelog](https://github.com/CLDMV/lib-process/blob/master/docs/changelog/v0/v0.1.0.md)
+
+---
+
 Pid files lie. A pid in a file can belong to an unrelated process by the time you read it, and inside a PID namespace a live process outside it looks dead. `process.kill(pid)` trusts whatever pid it gets, so a computed 0 or -1 signals a whole process group or every process you own.
 
 This package replaces those patterns with three small tools:
