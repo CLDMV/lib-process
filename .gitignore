@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+types/
+tmp/
+trash/
+*.log
+*.tgz
+.vscode/
+.claude/
+CLAUDE.md
