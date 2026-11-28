@@ -13,11 +13,17 @@
  *
  */
 
+/**
+ * @fileoverview CommonJS entry point: the generic CLDMV drop-in shim
+ * (CLDMV/.github docs/conventions/package-layout.md).
+ *
+ * It returns what `import` gives. The package exports several distinct values, so
+ * `require("@cldmv/lib-process")` is the module object (`{ alive, lock, safeKill, ... }`).
+ * The build copies it verbatim into dist/, where `./index.mjs` resolves to the built entry.
+ * @module lib-process/cjs-entry
+ */
 "use strict";
 
-// CommonJS entry for @cldmv/lib-process. It loads the sibling ESM module through Node's
-// synchronous require(esm), so there is one implementation and no second bundle. tsup copies
-// this file verbatim into dist/ next to the built .mjs.
 if (!process.features?.require_module) {
 	const error = new Error(
 		`@cldmv/lib-process: require() needs Node.js ^20.19.0 or >=22.13.0 (this is ${process.version}). On older Node.js, load the package with import() instead.`
@@ -26,4 +32,12 @@ if (!process.features?.require_module) {
 	throw error;
 }
 
-module.exports = require("./index.mjs");
+// Same exports as `import`. One distinct exported value (aliases of it count once) comes back as that value,
+// so require(x)(...) works; anything else comes back as the module object ({ default, ...named }).
+const esm = require("./index.mjs");
+const values = new Set(
+	Object.keys(esm)
+		.filter((key) => key !== "__esModule")
+		.map((key) => esm[key])
+);
+module.exports = values.size === 1 ? values.values().next().value : esm;
