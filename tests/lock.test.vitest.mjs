@@ -13,11 +13,26 @@
  *
  */
 
+import { spawnSync } from "node:child_process";
 import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { alive, CODES, lock, Lock } from "@cldmv/lib-process";
 import { cleanup, makeDeadSocket, scratch } from "./helpers/env.mjs";
+
+const takeOnce = fileURLToPath(new URL("./fixtures/take-once.mjs", import.meta.url));
+
+/**
+ * Runs the take-once fixture synchronously, the way a process blocks right after releasing.
+ * @param {"lock" | "hold"} how - Which API the child uses.
+ * @param {string} target - The folder it takes.
+ * @returns {{ status: number | null, out: string }} The child's exit status and output.
+ */
+const takeInChildNow = (how, target) => {
+	const res = spawnSync(process.execPath, [takeOnce, how, target], { encoding: "utf8", timeout: 30_000 });
+	return { status: res.status, out: res.stdout.trim() };
+};
 
 describe("lock", () => {
 	/** @type {string} */
@@ -107,5 +122,40 @@ describe("lock", () => {
 		["/tmp/x.lock", { retryInterval: 0 }]
 	])("rejects bad arguments (%j, %j)", async (target, options) => {
 		await expect(lock(/** @type {any} */ (target), options)).rejects.toMatchObject({ code: CODES.INVALID_ARGUMENT });
+	});
+
+	// #6: release() bound the takeover mutex before it returned and only let it go once the
+	// event loop ran again. A process that released and then blocked (spawnSync of the next
+	// process) left that child waiting on the mutex until MUTEX_TIMEOUT. Now release() stops
+	// holding before it returns, so the child takes the lock straight away.
+	it("is free the moment release() returns, even while the releaser then blocks", async () => {
+		const held = await lock(lockPath);
+		const releasing = held.release();
+		const { status, out } = takeInChildNow("lock", lockPath);
+		await releasing;
+		expect(out).toMatch(/^\d+$/);
+		expect(status).toBe(0);
+		expect(Number(out)).toBeLessThan(2000);
+	});
+
+	it("frees a held folder the moment close() returns, even while the holder then blocks", async () => {
+		const runDir = path.join(dir, "run");
+		const holder = await alive.hold(runDir);
+		const closing = holder.close();
+		const { status, out } = takeInChildNow("hold", runDir);
+		await closing;
+		expect(out).toMatch(/^\d+$/);
+		expect(status).toBe(0);
+		expect(Number(out)).toBeLessThan(2000);
+	});
+
+	it("leaves a newer holder's socket alone when cleanup runs after a takeover", async () => {
+		const runDir = path.join(dir, "run");
+		const first = await alive.hold(runDir);
+		const closing = first.close();
+		const second = await alive.hold(runDir);
+		await closing;
+		expect(await alive.check(runDir)).toBe("alive");
+		await second.close();
 	});
 });

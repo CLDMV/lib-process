@@ -53,8 +53,10 @@ export class Lock {
 	}
 
 	/**
-	 * Releases the lock and removes the lock folder (unless something else was put in it).
-	 * Calling it again returns the first call's promise.
+	 * Releases the lock and removes the lock folder (unless something else was put in it). The
+	 * lock is free as soon as this returns, so the next process can take it even when the caller
+	 * blocks straight after (a spawnSync of that process); the promise settles once the folder
+	 * is cleaned up. Calling it again returns the first call's promise.
 	 * @returns {Promise<void>}
 	 */
 	release() {
