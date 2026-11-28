@@ -204,8 +204,6 @@ export async function check(dir, { timeout = DEFAULT_CHECK_TIMEOUT_MS } = {}) {
 export class Holder {
 	/** @type {net.Server | null} */
 	#server;
-	/** @type {{ dev: number, ino: number } | null} */
-	#identity;
 	/** @type {string} */
 	#key;
 	/** @type {boolean} */
@@ -218,17 +216,15 @@ export class Holder {
 	 * @param {string} init.dir - The held folder's real path.
 	 * @param {string | null} init.socketPath - The socket's path, or null where sockets aren't supported.
 	 * @param {net.Server | null} init.server - The listening server.
-	 * @param {{ dev: number, ino: number } | null} init.identity - The socket file's device and inode.
 	 * @param {string} init.key - The mutex key for the folder.
 	 * @param {boolean} [init.removeDir] - Remove the folder on close when it's empty.
 	 */
-	constructor({ dir, socketPath, server, identity, key, removeDir = false }) {
+	constructor({ dir, socketPath, server, key, removeDir = false }) {
 		/** The held folder (its real path). */
 		this.dir = dir;
 		/** Path of the socket, or null on Windows, where holding is a no-op. */
 		this.socketPath = socketPath;
 		this.#server = server;
-		this.#identity = identity;
 		this.#key = key;
 		this.#removeDir = removeDir;
 	}
@@ -247,8 +243,8 @@ export class Holder {
 	 * Stops holding: closes the socket and removes its file. The socket is closed before this
 	 * returns, so the folder is free straight away, even when the caller then blocks without
 	 * awaiting; the promise settles once the file is cleaned up. The file is only removed when
-	 * it is still this holder's own (same inode, nothing answering), so a later holder's socket
-	 * is never touched. Calling it again returns the first call's promise.
+	 * nothing answers on it, so a later holder's live socket is never touched. Calling it again
+	 * returns the first call's promise.
 	 * @returns {Promise<void>}
 	 */
 	close() {
@@ -269,14 +265,12 @@ export class Holder {
 		// until the event loop ran again (#6).
 		await new Promise((resolve) => server.close(() => resolve(undefined)));
 		await withMutex(this.#key, async () => {
-			// Another process may have taken the folder over since the socket stopped, and its
-			// socket can reuse this one's inode number (it often does). So the file is only removed
-			// when it has this holder's inode and nothing answers on it: a newer holder's live
-			// socket is never touched.
+			// Another process may have taken the folder over since the socket stopped. Its socket
+			// often reuses this one's inode number, so the inode can't tell them apart; whether
+			// anything answers can. A live socket is never removed. A dead one is removed whoever
+			// left it: any taker would take it over anyway.
 			const stats = await statSocket(socketPath).catch(() => null);
-			if (stats && this.#identity && stats.dev === this.#identity.dev && stats.ino === this.#identity.ino) {
-				if ((await probe(socketPath, DEFAULT_CHECK_TIMEOUT_MS)) !== "alive") await unlink(socketPath).catch(ignoreGone);
-			}
+			if (stats && (await probe(socketPath, DEFAULT_CHECK_TIMEOUT_MS)) !== "alive") await unlink(socketPath).catch(ignoreGone);
 			if (this.#removeDir) await rmdir(this.dir).catch(ignoreGoneOrNotEmpty);
 		});
 	}
@@ -338,7 +332,7 @@ export async function holdFolder(dir, { removeDir }) {
 	/* v8 ignore start -- Windows: nothing to hold (see above); CI doesn't test on Windows. */
 	if (process.platform === "win32") {
 		await mkdir(resolved, { recursive: true });
-		return new Holder({ dir: resolved, socketPath: null, server: null, identity: null, key: resolved });
+		return new Holder({ dir: resolved, socketPath: null, server: null, key: resolved });
 	}
 	/* v8 ignore stop */
 	const real = await realFolder(resolved);
@@ -360,7 +354,6 @@ export async function holdFolder(dir, { removeDir }) {
 			await unlink(socketPath).catch(ignoreGone);
 		}
 		const server = await bindInPlace(real, socketPath);
-		const { dev, ino } = await lstat(socketPath);
-		return new Holder({ dir: real, socketPath, server, identity: { dev, ino }, key: real, removeDir });
+		return new Holder({ dir: real, socketPath, server, key: real, removeDir });
 	});
 }
