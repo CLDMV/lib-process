@@ -92,7 +92,7 @@
 		"@cldmv/fix-headers": "^2.2.7",
 		"@cldmv/jsonv": "^1.2.2",
 		"@cldmv/prettier-plugin-jsonv": "^1.2.2",
-		"@cldmv/vitest-runner": "^1.6.1",
+		"@cldmv/vitest-runner": "^1.11.3",
 		"@eslint/css": "^2.0.1",
 		"@eslint/js": "^10.0.1",
 		"@eslint/json": "^2.1.1",
