@@ -8,10 +8,14 @@ Process safety for Node: liveness checks a crash can't leave stale, locks that r
 
 ## ✨ What's New
 
-### Latest: v0.1.0 (November 2026)
+### Latest: v0.1.1 (November 2026)
 
-- **First release** — `alive.hold()` / `alive.check()` give a liveness check through a Unix socket that a crash can't leave stale, `lock()` is an exclusive lock that a dead holder's successor takes over at once, and `safeKill()` only signals the caller's own descendants (or reported processes that started after a given time) ([#2](https://github.com/CLDMV/lib-process/pull/2)). `lock()` and `safeKill()` are Linux only for now.
-- [View full v0.1.0 Changelog](https://github.com/CLDMV/lib-process/blob/master/docs/changelog/v0/v0.1.0.md)
+- **A lock is free the moment `release()` returns** — `release()` and a holder's `close()` stop listening before they return, so a process that releases and then blocks (a `spawnSync` of the next process) no longer leaves that process timing out on an internal mutex ([#15](https://github.com/CLDMV/lib-process/pull/15)). The CommonJS entry is the generic CLDMV shim, with `require()` unchanged ([#12](https://github.com/CLDMV/lib-process/pull/12)).
+- [View full v0.1.1 Changelog](https://github.com/CLDMV/lib-process/blob/master/docs/changelog/v0/v0.1.1.md)
+
+### Recent Releases
+
+- **v0.1.0** (November 2026) — first release: `alive.hold()` / `alive.check()`, `lock()` and `safeKill()` ([Changelog](https://github.com/CLDMV/lib-process/blob/master/docs/changelog/v0/v0.1.0.md))
 
 ---
 
