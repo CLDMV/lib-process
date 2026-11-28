@@ -42,6 +42,19 @@ test("dist/index.cjs re-exports dist/index.mjs", async () => {
 	for (const name of NAMES) assert.equal(cjs[name], esm[name], `${name} is a different value`);
 });
 
+test("src/index.cjs is the generic shim: require() returns the module object, same keys and values as import", async () => {
+	const esm = await import(pathToFileURL(path.join(root, "src", "index.mjs")).href);
+	const cjs = require(path.join(root, "src", "index.cjs"));
+	assert.equal(typeof cjs, "object");
+	assert.deepEqual(
+		Object.keys(cjs)
+			.filter((key) => key !== "__esModule")
+			.sort(),
+		Object.keys(esm).sort()
+	);
+	for (const name of NAMES) assert.equal(cjs[name], esm[name], `${name} is a different value`);
+});
+
 test("dist/index.cjs is the verbatim copy of src/index.cjs", () => {
 	assert.equal(fs.readFileSync(path.join(dist, "index.cjs"), "utf8"), fs.readFileSync(path.join(root, "src", "index.cjs"), "utf8"));
 });

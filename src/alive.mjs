@@ -60,6 +60,10 @@ const DEFAULT_CHECK_TIMEOUT_MS = 2000;
  */
 const STATE_BY_CONNECT_ERROR = Object.freeze({
 	ECONNREFUSED: "dead",
+	// A Unix-socket connect is queued at once and fires "connect", so a reset before that only
+	// happens when the listener closed with the connection still queued: its holder just
+	// stopped (close()) or died. Either way nothing holds the folder any more.
+	ECONNRESET: "dead",
 	EAGAIN: "alive",
 	ENOENT: "unknown"
 });
@@ -200,8 +204,6 @@ export async function check(dir, { timeout = DEFAULT_CHECK_TIMEOUT_MS } = {}) {
 export class Holder {
 	/** @type {net.Server | null} */
 	#server;
-	/** @type {{ dev: number, ino: number } | null} */
-	#identity;
 	/** @type {string} */
 	#key;
 	/** @type {boolean} */
@@ -214,17 +216,15 @@ export class Holder {
 	 * @param {string} init.dir - The held folder's real path.
 	 * @param {string | null} init.socketPath - The socket's path, or null where sockets aren't supported.
 	 * @param {net.Server | null} init.server - The listening server.
-	 * @param {{ dev: number, ino: number } | null} init.identity - The socket file's device and inode.
 	 * @param {string} init.key - The mutex key for the folder.
 	 * @param {boolean} [init.removeDir] - Remove the folder on close when it's empty.
 	 */
-	constructor({ dir, socketPath, server, identity, key, removeDir = false }) {
+	constructor({ dir, socketPath, server, key, removeDir = false }) {
 		/** The held folder (its real path). */
 		this.dir = dir;
 		/** Path of the socket, or null on Windows, where holding is a no-op. */
 		this.socketPath = socketPath;
 		this.#server = server;
-		this.#identity = identity;
 		this.#key = key;
 		this.#removeDir = removeDir;
 	}
@@ -240,9 +240,11 @@ export class Holder {
 	}
 
 	/**
-	 * Stops holding: closes the socket and removes its file. The file is only removed when it
-	 * is still this holder's own (same inode), so a later holder's socket is never touched.
-	 * Calling it again returns the first call's promise.
+	 * Stops holding: closes the socket and removes its file. The socket is closed before this
+	 * returns, so the folder is free straight away, even when the caller then blocks without
+	 * awaiting; the promise settles once the file is cleaned up. The file is only removed when
+	 * nothing answers on it, so a later holder's live socket is never touched. Calling it again
+	 * returns the first call's promise.
 	 * @returns {Promise<void>}
 	 */
 	close() {
@@ -256,21 +258,21 @@ export class Holder {
 		/* v8 ignore next -- only the Windows no-op handle has no server; CI doesn't test on Windows. */
 		if (!server || !socketPath) return;
 		this.#server = null;
-		const stop = () => new Promise((resolve) => server.close(() => resolve(undefined)));
-		try {
-			await withMutex(this.#key, async () => {
-				const stats = await statSocket(socketPath).catch(() => null);
-				if (stats && this.#identity && stats.dev === this.#identity.dev && stats.ino === this.#identity.ino) {
-					await unlink(socketPath).catch(ignoreGone);
-				}
-				await stop();
-				if (this.#removeDir) await rmdir(this.dir).catch(ignoreGoneOrNotEmpty);
-			});
-		} catch (error) {
-			// Without the mutex the file can't be removed safely, but the holder must still stop.
-			if (server.listening) await stop();
-			throw error;
-		}
+		// Stop listening before close() returns: server.close() shuts the socket synchronously,
+		// so the folder is free the moment this call hands back its promise, and a caller that
+		// then blocks (a spawnSync of the next holder) doesn't keep anyone waiting. The mutex is
+		// only taken after the first await. Taking it here, before returning, left it bound
+		// until the event loop ran again (#6).
+		await new Promise((resolve) => server.close(() => resolve(undefined)));
+		await withMutex(this.#key, async () => {
+			// Another process may have taken the folder over since the socket stopped. Its socket
+			// often reuses this one's inode number, so the inode can't tell them apart; whether
+			// anything answers can. A live socket is never removed. A dead one is removed whoever
+			// left it: any taker would take it over anyway.
+			const stats = await statSocket(socketPath).catch(() => null);
+			if (stats && (await probe(socketPath, DEFAULT_CHECK_TIMEOUT_MS)) !== "alive") await unlink(socketPath).catch(ignoreGone);
+			if (this.#removeDir) await rmdir(this.dir).catch(ignoreGoneOrNotEmpty);
+		});
 	}
 }
 
@@ -330,7 +332,7 @@ export async function holdFolder(dir, { removeDir }) {
 	/* v8 ignore start -- Windows: nothing to hold (see above); CI doesn't test on Windows. */
 	if (process.platform === "win32") {
 		await mkdir(resolved, { recursive: true });
-		return new Holder({ dir: resolved, socketPath: null, server: null, identity: null, key: resolved });
+		return new Holder({ dir: resolved, socketPath: null, server: null, key: resolved });
 	}
 	/* v8 ignore stop */
 	const real = await realFolder(resolved);
@@ -352,7 +354,6 @@ export async function holdFolder(dir, { removeDir }) {
 			await unlink(socketPath).catch(ignoreGone);
 		}
 		const server = await bindInPlace(real, socketPath);
-		const { dev, ino } = await lstat(socketPath);
-		return new Holder({ dir: real, socketPath, server, identity: { dev, ino }, key: real, removeDir });
+		return new Holder({ dir: real, socketPath, server, key: real, removeDir });
 	});
 }
