@@ -60,6 +60,10 @@ const DEFAULT_CHECK_TIMEOUT_MS = 2000;
  */
 const STATE_BY_CONNECT_ERROR = Object.freeze({
 	ECONNREFUSED: "dead",
+	// A Unix-socket connect is queued at once and fires "connect", so a reset before that only
+	// happens when the listener closed with the connection still queued: its holder just
+	// stopped (close()) or died. Either way nothing holds the folder any more.
+	ECONNRESET: "dead",
 	EAGAIN: "alive",
 	ENOENT: "unknown"
 });
@@ -240,9 +244,11 @@ export class Holder {
 	}
 
 	/**
-	 * Stops holding: closes the socket and removes its file. The file is only removed when it
-	 * is still this holder's own (same inode), so a later holder's socket is never touched.
-	 * Calling it again returns the first call's promise.
+	 * Stops holding: closes the socket and removes its file. The socket is closed before this
+	 * returns, so the folder is free straight away, even when the caller then blocks without
+	 * awaiting; the promise settles once the file is cleaned up. The file is only removed when
+	 * it is still this holder's own (same inode, nothing answering), so a later holder's socket
+	 * is never touched. Calling it again returns the first call's promise.
 	 * @returns {Promise<void>}
 	 */
 	close() {
@@ -256,21 +262,23 @@ export class Holder {
 		/* v8 ignore next -- only the Windows no-op handle has no server; CI doesn't test on Windows. */
 		if (!server || !socketPath) return;
 		this.#server = null;
-		const stop = () => new Promise((resolve) => server.close(() => resolve(undefined)));
-		try {
-			await withMutex(this.#key, async () => {
-				const stats = await statSocket(socketPath).catch(() => null);
-				if (stats && this.#identity && stats.dev === this.#identity.dev && stats.ino === this.#identity.ino) {
-					await unlink(socketPath).catch(ignoreGone);
-				}
-				await stop();
-				if (this.#removeDir) await rmdir(this.dir).catch(ignoreGoneOrNotEmpty);
-			});
-		} catch (error) {
-			// Without the mutex the file can't be removed safely, but the holder must still stop.
-			if (server.listening) await stop();
-			throw error;
-		}
+		// Stop listening before close() returns: server.close() shuts the socket synchronously,
+		// so the folder is free the moment this call hands back its promise, and a caller that
+		// then blocks (a spawnSync of the next holder) doesn't keep anyone waiting. The mutex is
+		// only taken after the first await. Taking it here, before returning, left it bound
+		// until the event loop ran again (#6).
+		await new Promise((resolve) => server.close(() => resolve(undefined)));
+		await withMutex(this.#key, async () => {
+			// Another process may have taken the folder over since the socket stopped, and its
+			// socket can reuse this one's inode number (it often does). So the file is only removed
+			// when it has this holder's inode and nothing answers on it: a newer holder's live
+			// socket is never touched.
+			const stats = await statSocket(socketPath).catch(() => null);
+			if (stats && this.#identity && stats.dev === this.#identity.dev && stats.ino === this.#identity.ino) {
+				if ((await probe(socketPath, DEFAULT_CHECK_TIMEOUT_MS)) !== "alive") await unlink(socketPath).catch(ignoreGone);
+			}
+			if (this.#removeDir) await rmdir(this.dir).catch(ignoreGoneOrNotEmpty);
+		});
 	}
 }
 
