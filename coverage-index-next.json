@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"commit": "349bc9d5bdbe9a41ed07cae6575d82515e2f40c4",
+	"commit": "71616b605a95ec95da6d0e938b83e2d3127a7314",
 	"files": {
 		"src/alive.mjs": {
 			"socketPathFor": [
@@ -37,6 +37,7 @@
 			"(anonymous_5)": [
 				"tests/alive.test.vitest.mjs",
 				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
 				"tests/lock.test.vitest.mjs"
 			],
 			"(anonymous_6)": [
@@ -111,6 +112,7 @@
 			"(anonymous_18)": [
 				"tests/alive.test.vitest.mjs",
 				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
 				"tests/lock.test.vitest.mjs"
 			],
 			"(anonymous_19)": [
@@ -206,6 +208,7 @@
 			"(anonymous_2)": [
 				"tests/alive.test.vitest.mjs",
 				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
 				"tests/lock.test.vitest.mjs"
 			],
 			"(anonymous_3)": [
