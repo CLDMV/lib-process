@@ -1,0 +1,270 @@
+{
+	"version": 1,
+	"commit": "a3766f35f3a266883913d39b7fd3e5011949e705",
+	"files": {
+		"src/alive.mjs": {
+			"socketPathFor": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/probe-timeout.test.vitest.mjs"
+			],
+			"probe": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/probe-timeout.test.vitest.mjs"
+			],
+			"(anonymous_2)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/probe-timeout.test.vitest.mjs"
+			],
+			"(anonymous_3)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/probe-timeout.test.vitest.mjs"
+			],
+			"(anonymous_4)": [
+				"tests/probe-timeout.test.vitest.mjs"
+			],
+			"(anonymous_5)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"(anonymous_6)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"statSocket": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/probe-timeout.test.vitest.mjs"
+			],
+			"realFolder": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"bindInPlace": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"check": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/probe-timeout.test.vitest.mjs"
+			],
+			"constructor": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"unsupported": [
+				"tests/alive.test.vitest.mjs"
+			],
+			"closed": [
+				"tests/alive.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"close": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"(anonymous_15)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"(anonymous_16)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"(anonymous_17)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"(anonymous_18)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"(anonymous_19)": [
+				"tests/alive.test.vitest.mjs"
+			],
+			"ignoreGone": [
+				"tests/fs-errors.test.vitest.mjs"
+			],
+			"ignoreGoneOrNotEmpty": [
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"hold": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"holdFolder": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"(anonymous_24)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			]
+		},
+		"src/errors.mjs": {
+			"constructor": [
+				"tests/alive.test.vitest.mjs",
+				"tests/errors.test.vitest.mjs",
+				"tests/kill-mocked.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/mutex.test.vitest.mjs",
+				"tests/proc.test.vitest.mjs"
+			],
+			"assertPlatform": [
+				"tests/errors.test.vitest.mjs",
+				"tests/kill-mocked.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			]
+		},
+		"src/index.mjs": {},
+		"src/kill.mjs": {
+			"ancestorsOf": [
+				"tests/kill-mocked.test.vitest.mjs",
+				"tests/kill-plan.test.vitest.mjs"
+			],
+			"isDescendant": [
+				"tests/kill-mocked.test.vitest.mjs",
+				"tests/kill-plan.test.vitest.mjs"
+			],
+			"planKill": [
+				"tests/kill-mocked.test.vitest.mjs",
+				"tests/kill-plan.test.vitest.mjs"
+			],
+			"(anonymous_3)": [
+				"tests/kill-mocked.test.vitest.mjs",
+				"tests/kill-plan.test.vitest.mjs"
+			],
+			"validateSignal": [
+				"tests/kill-mocked.test.vitest.mjs"
+			],
+			"validateSince": [
+				"tests/kill-mocked.test.vitest.mjs"
+			],
+			"safeKill": [
+				"tests/kill-mocked.test.vitest.mjs"
+			],
+			"(anonymous_7)": [
+				"tests/kill-mocked.test.vitest.mjs"
+			]
+		},
+		"src/listen.mjs": {
+			"listen": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/mutex.test.vitest.mjs"
+			],
+			"(anonymous_1)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/mutex.test.vitest.mjs"
+			],
+			"(anonymous_2)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs"
+			],
+			"(anonymous_3)": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/mutex.test.vitest.mjs"
+			]
+		},
+		"src/lock.mjs": {
+			"constructor": [
+				"tests/lock.test.vitest.mjs"
+			],
+			"released": [
+				"tests/lock.test.vitest.mjs"
+			],
+			"release": [
+				"tests/lock.test.vitest.mjs"
+			],
+			"lock": [
+				"tests/lock.test.vitest.mjs"
+			]
+		},
+		"src/mutex.mjs": {
+			"withMutex": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/mutex.test.vitest.mjs"
+			],
+			"acquire": [
+				"tests/alive.test.vitest.mjs",
+				"tests/fs-errors.test.vitest.mjs",
+				"tests/holder-close.test.vitest.mjs",
+				"tests/lock.test.vitest.mjs",
+				"tests/mutex.test.vitest.mjs"
+			]
+		},
+		"src/proc.mjs": {
+			"assertProcMatches": [
+				"tests/proc.test.vitest.mjs"
+			],
+			"bootTimeMs": [
+				"tests/proc.test.vitest.mjs"
+			],
+			"parseStat": [
+				"tests/proc.test.vitest.mjs"
+			],
+			"parseTgid": [
+				"tests/proc.test.vitest.mjs"
+			],
+			"readProcess": [
+				"tests/proc.test.vitest.mjs"
+			]
+		}
+	}
+}
